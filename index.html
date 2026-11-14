@@ -91,6 +91,10 @@
     </div>
     <p class="bank-empty" id="bankEmpty" hidden></p>
     <div class="chips" id="chips"></div>
+    <footer class="credits">
+      <span class="love">Built with love for Ceci <span class="beating">❤️</span></span>
+      <button type="button" class="link-btn" id="btnAbout">About</button>
+    </footer>
   </aside>
 </div>
 
@@ -193,6 +197,24 @@
   <div class="dialog-actions">
     <button class="btn" type="button" id="confirmNo"></button>
     <button class="btn btn-primary" type="button" id="confirmYes"></button>
+  </div>
+</dialog>
+
+<dialog class="sheet sheet-small about" id="aboutDialog" aria-labelledby="aboutTitle">
+  <div class="board-top">
+    <h2 id="aboutTitle">About</h2>
+    <button class="dialog-close" type="button" id="aboutClose" aria-label="Close">&times;</button>
+  </div>
+  <p class="about-game">Artery Irrigation Regions</p>
+  <p class="lede">A study game for the arteries of the head and neck: match each of the 43 regions to the artery that irrigates it.</p>
+  <p class="about-love">Built with love for Ceci <span class="beating">❤️</span></p>
+  <p class="about-rights">&copy; 2026 Peri Rocha &amp; Cecilia Stelzer. All rights reserved.</p>
+  <dl class="about-credits">
+    <div><dt>Fonts</dt><dd>Atkinson Hyperlegible (&copy; Braille Institute of America) and Crimson Pro (&copy; The Crimson Pro Project Authors), used under the SIL Open Font License</dd></div>
+    <div><dt>Also try</dt><dd><a href="../arterybloodsupply.game/">Arterial Blood Supply of the Head and Neck &rarr;</a></dd></div>
+  </dl>
+  <div class="dialog-actions">
+    <button class="btn btn-primary" type="button" id="aboutDone">Close</button>
   </div>
 </dialog>
 
