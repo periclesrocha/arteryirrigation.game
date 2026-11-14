@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Artery Irrigation Regions · Head and Neck</title>
+<meta name="description" content="A matching game for the head and neck: pick an artery, then find every region it irrigates.">
+<meta name="theme-color" content="#A8132C">
+<meta property="og:title" content="Artery Irrigation Regions">
+<meta property="og:description" content="Pick an artery, then find every region it irrigates. 17 arteries, 43 regions.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23F1F3F6'/%3E%3Cpath d='M8 32 H24 C32 32 32 15 42 15 M24 32 H42 M24 32 C32 32 32 49 42 49' fill='none' stroke='%23A8132C' stroke-width='6' stroke-linecap='round'/%3E%3Ccircle cx='50' cy='15' r='6' fill='%23A8132C'/%3E%3Ccircle cx='50' cy='32' r='6' fill='%23A8132C'/%3E%3Ccircle cx='50' cy='49' r='6' fill='%23A8132C'/%3E%3C/svg%3E">
+<link rel="preload" href="fonts/atkinson-hyperlegible-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/crimson-pro-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app" id="app">
+
+  <header class="top">
+    <div class="brand">
+      <svg class="mark" id="mark" viewBox="0 0 64 64" aria-hidden="true">
+        <path d="M5 32 H22 C30 32 30 14 40 14 M22 32 H40 M22 32 C30 32 30 50 40 50" />
+        <circle cx="50" cy="14" r="6.5" /><circle cx="50" cy="32" r="6.5" /><circle cx="50" cy="50" r="6.5" />
+      </svg>
+      <div class="brand-text">
+        <h1>Artery Irrigation Regions</h1>
+        <p class="mode-line" id="modeLine">Head and neck</p>
+      </div>
+    </div>
+
+    <dl class="stats" aria-label="Game stats">
+      <div class="stat"><dt>Time</dt><dd id="statTime">0:00</dd></div>
+      <div class="stat"><dt>Mistakes</dt><dd id="statMistakes">0</dd></div>
+      <div class="stat"><dt>Hints</dt><dd id="statHints">0</dd></div>
+      <div class="stat stat-score"><dt>Score</dt><dd id="statScore">0:00</dd></div>
+    </dl>
+
+    <div class="actions">
+      <button class="btn" id="btnHint" type="button">Hint</button>
+      <button class="btn btn-primary" id="btnCheck" type="button" hidden><span class="lg">Check answers</span><span class="sm">Check</span></button>
+      <button class="btn btn-quiet" id="btnReveal" type="button"><span class="lg">Show answers</span><span class="sm">Answers</span></button>
+      <button class="btn" id="btnBoard" type="button" aria-label="Leaderboard" title="Leaderboard"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 4h9v4.5a4.5 4.5 0 0 1-9 0z"/><path d="M7.5 6H5a2.6 2.6 0 0 0 2.9 3.6M16.5 6H19a2.6 2.6 0 0 1-2.9 3.6M12 13v4M8.5 20h7M10 17h4v3h-4z"/></svg><span class="lbl">Leaderboard</span></button>
+      <button class="btn" id="btnNew" type="button">New game</button>
+      <button class="btn btn-icon" id="btnSound" type="button" aria-pressed="true" aria-label="Sound">
+        <svg viewBox="0 0 24 24" aria-hidden="true" class="icon-on"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4.2 4.2 0 0 1 0 6M18 6.5a7.8 7.8 0 0 1 0 11" class="wave"/></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true" class="icon-off"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5" class="wave"/></svg>
+      </button>
+    </div>
+
+    <div class="progress" aria-hidden="true"><span id="progressFill"></span></div>
+  </header>
+
+  <main class="table-panel" id="tablePanel">
+    <div class="panel-head">
+      <div class="panel-title">
+        <h2>Arteries</h2>
+        <span id="matchCount">0 of 43 matched</span>
+      </div>
+      <div class="head-right">
+        <div class="pill" id="chipPill" hidden>
+          <span id="chipPillText"></span>
+          <button type="button" class="pill-x" id="chipPillX" aria-label="Cancel">&times;</button>
+        </div>
+        <div class="streak" id="streak" hidden aria-live="polite">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.6 2.5c.5 3.1-1.3 4.6-2.8 6.3-1.4 1.6-2.6 3.2-2.6 5.6a4.8 4.8 0 0 0 9.6 0c0-1.6-.6-2.9-1.4-4 .1 1.3-.4 2.4-1.4 2.9.5-2.6-.2-4.9-1.4-6.6.9 2.9-.3 4.6-1.4 5.6-.3-1.3.1-2.6.9-3.9 1.3-2 2.4-3.6 1.9-5.9z"/></svg>
+          <span id="streakText">0 in a row</span>
+        </div>
+      </div>
+    </div>
+    <div class="arteries" id="arteries" role="region" aria-label="Arteries"></div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </main>
+
+  <aside class="bank" id="bank" aria-label="Regions irrigated">
+    <div class="bank-head">
+      <div class="bank-title">
+        <h2>Regions irrigated</h2>
+        <span id="bankCount">43 left</span>
+      </div>
+      <div class="target" id="target" hidden>
+        <span id="targetText"></span>
+        <button type="button" class="pill-x" id="targetX" aria-label="Deselect artery">&times;</button>
+      </div>
+      <div class="bank-tools">
+        <input type="search" id="filter" placeholder="Filter regions" autocomplete="off" spellcheck="false" aria-label="Filter regions">
+        <div class="seg" role="group" aria-label="Sort regions">
+          <button type="button" data-sort="shuffle" aria-pressed="true">Shuffled</button>
+          <button type="button" data-sort="az" aria-pressed="false">A&ndash;Z</button>
+        </div>
+      </div>
+    </div>
+    <p class="bank-empty" id="bankEmpty" hidden></p>
+    <div class="chips" id="chips"></div>
+  </aside>
+</div>
+
+<canvas class="confetti" id="confetti" popover="manual" aria-hidden="true"></canvas>
+
+<dialog class="sheet" id="introDialog" aria-labelledby="introTitle">
+  <form method="dialog" id="introForm">
+    <h2 id="introTitle">Match each region to its artery</h2>
+    <p class="lede">Pick an artery on the left, then pick every region it irrigates from the list on the right. You can also pick a region first and then its artery. A few regions get blood from two arteries, so their names show up twice.</p>
+
+    <label class="field" for="nickInput">
+      <span class="field-label">Your nickname</span>
+      <input id="nickInput" name="nickname" type="text" maxlength="24" autocomplete="nickname" autocapitalize="words" spellcheck="false" placeholder="Pick a name for the leaderboard">
+      <span class="field-hint" id="nickHint">Use the same nickname every time to keep all your scores together.</span>
+    </label>
+
+    <fieldset class="modes">
+      <legend>How do you want to play?</legend>
+      <label class="mode-card">
+        <input type="radio" name="mode" value="practice" checked>
+        <span class="mode-name">Practice</span>
+        <span class="mode-desc">See right away whether each match is right. Wrong picks bounce back and count as mistakes.</span>
+      </label>
+      <label class="mode-card">
+        <input type="radio" name="mode" value="test">
+        <span class="mode-name">Test</span>
+        <span class="mode-desc">Fill every artery's rows without feedback, then check your answers and get a score.</span>
+      </label>
+    </fieldset>
+
+    <p class="rule">Your score is your time plus 10 seconds for each mistake and 20 seconds for each hint. Lower is better.</p>
+
+    <div class="dialog-actions">
+      <button class="btn" type="button" id="btnStudy">Study the table</button>
+      <button class="btn btn-primary btn-lg" value="start" id="btnStart">Start</button>
+    </div>
+    <p class="sibling"><a href="../arterybloodsupply.game/">Also try: build the arterial tree of the head and neck &rarr;</a></p>
+  </form>
+</dialog>
+
+<dialog class="sheet" id="resultDialog" aria-labelledby="resultTitle">
+  <div class="mascot-wrap" id="mascot" hidden aria-hidden="true">
+    <svg class="mascot" viewBox="0 0 140 124">
+      <g class="sparkles">
+        <path d="M14 30l3 7 7 3-7 3-3 7-3-7-7-3 7-3z" />
+        <path d="M124 18l2.4 5.6 5.6 2.4-5.6 2.4-2.4 5.6-2.4-5.6-5.6-2.4 5.6-2.4z" />
+        <path d="M128 84l2 4.6 4.6 2-4.6 2-2 4.6-2-4.6-4.6-2 4.6-2z" />
+        <path d="M10 92l1.8 4 4 1.8-4 1.8-1.8 4-1.8-4-4-1.8 4-1.8z" />
+      </g>
+      <g class="beat">
+        <path class="heart" d="M70 116 C 36 92, 18 72, 18 46 C 18 28, 32 15, 48 15 C 58 15, 65 20, 70 29 C 75 20, 82 15, 92 15 C 108 15, 122 28, 122 46 C 122 72, 104 92, 70 116 Z" />
+        <path class="shine" d="M38 34 C 42 27, 50 25, 56 27" />
+        <ellipse class="eye" cx="56" cy="56" rx="5" ry="6.5" />
+        <ellipse class="eye" cx="84" cy="56" rx="5" ry="6.5" />
+        <circle class="glint" cx="58" cy="53.5" r="1.8" /><circle class="glint" cx="86" cy="53.5" r="1.8" />
+        <ellipse class="blush" cx="45" cy="70" rx="7" ry="4.2" /><ellipse class="blush" cx="95" cy="70" rx="7" ry="4.2" />
+        <path class="smile" d="M60 72 C 64 80, 76 80, 80 72" />
+      </g>
+    </svg>
+  </div>
+  <h2 id="resultTitle"></h2>
+  <p class="lede" id="resultText"></p>
+  <dl class="result-stats" id="resultStats"></dl>
+  <p class="result-best" id="resultBest"></p>
+  <div class="dialog-actions" id="resultActions"></div>
+</dialog>
+
+<dialog class="sheet sheet-wide" id="boardDialog" aria-labelledby="boardTitle">
+  <div class="board-top">
+    <h2 id="boardTitle">Leaderboard</h2>
+    <button class="dialog-close" type="button" id="boardClose" aria-label="Close leaderboard">&times;</button>
+  </div>
+  <div class="board-tabs">
+    <div class="seg" role="group" aria-label="Mode">
+      <button type="button" data-bmode="practice" aria-pressed="true">Practice</button>
+      <button type="button" data-bmode="test" aria-pressed="false">Test</button>
+    </div>
+  </div>
+  <p class="board-note" id="boardNote" hidden></p>
+  <div class="board-body" id="boardBody"></div>
+  <p class="board-foot">Score is time plus 10 seconds per mistake and 20 seconds per hint. Lower is better. Each player's best run is shown; select a name to see all of their runs.</p>
+</dialog>
+
+<dialog class="sheet sheet-wide" id="tableDialog" aria-labelledby="tableTitle">
+  <div class="board-top">
+    <h2 id="tableTitle">Artery Irrigation Regions</h2>
+    <button class="dialog-close" type="button" id="tableClose" aria-label="Close table">&times;</button>
+  </div>
+  <p class="lede table-lede">Every artery and the regions it irrigates, in the order of the original table.</p>
+  <div class="table-wrap" id="tableWrap"></div>
+  <div class="dialog-actions">
+    <button class="btn" type="button" id="tablePrint">Print</button>
+    <button class="btn btn-primary" type="button" id="tableDone">Close</button>
+  </div>
+</dialog>
+
+<dialog class="sheet sheet-small" id="confirmDialog" aria-labelledby="confirmTitle">
+  <h2 id="confirmTitle"></h2>
+  <p class="lede" id="confirmText"></p>
+  <div class="dialog-actions">
+    <button class="btn" type="button" id="confirmNo"></button>
+    <button class="btn btn-primary" type="button" id="confirmYes"></button>
+  </div>
+</dialog>
+
+<script src="config.js"></script>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
