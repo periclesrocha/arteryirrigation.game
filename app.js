@@ -1452,6 +1452,14 @@
   el.boardDialog.querySelectorAll('[data-bmode]').forEach(b => b.addEventListener('click', () => { boardView.mode = b.dataset.bmode; loadBoard(); }));
 
   // ------------------------------------------------------------------
+  // About
+  // ------------------------------------------------------------------
+  const aboutDialog = document.getElementById('aboutDialog');
+  document.getElementById('btnAbout').addEventListener('click', () => { if (!aboutDialog.open) aboutDialog.showModal(); });
+  ['aboutClose', 'aboutDone'].forEach(id => document.getElementById(id).addEventListener('click', () => aboutDialog.close()));
+  aboutDialog.addEventListener('click', e => { if (e.target === aboutDialog) aboutDialog.close(); });
+
+  // ------------------------------------------------------------------
   // Boot
   // ------------------------------------------------------------------
   function boot() {
