@@ -6,6 +6,10 @@
   // Data: arteries in document order, one row per region (the table's rows)
   // ------------------------------------------------------------------
   const norm = s => String(s).toLowerCase().replace(/\s+/g, ' ').trim();
+  // Different wording for the same structure (data.js) counts as one region
+  const alias = new Map();
+  (window.IRRIGATION_SAME || []).forEach(set => set.forEach(label => alias.set(norm(label), norm(set[0]))));
+  const keyOf = label => alias.get(norm(label)) || norm(label);
   const groups = [];
   const arteries = [];
   let rowOrder = 0;
@@ -15,10 +19,12 @@
       const art = {
         id: 'a' + arteries.length,
         name: a.name,
+        branchOf: a.branchOf || '',
         group: gi,
-        regions: a.regions.map(label => ({ label, key: norm(label), order: rowOrder++ }))
+        regions: a.regions.map(label => ({ label, key: keyOf(label), order: rowOrder++ }))
       };
       art.keys = art.regions.map(r => r.key);
+      if (new Set(art.keys).size !== art.keys.length) console.warn('Same region listed twice under', a.name);
       art.n = art.regions.length;
       arteries.push(art);
       group.arteries.push(art);
@@ -28,6 +34,8 @@
   const TOTAL = rowOrder;
   const arteryById = new Map(arteries.map(a => [a.id, a]));
   const orderIn = (a, key) => { const r = a.regions.find(x => x.key === key); return r ? r.order : 1e9; };
+  const labelIn = (a, key, fallback) => { const r = a.regions.find(x => x.key === key); return r ? r.label : fallback; };
+  const branchLabel = a => a.branchOf ? a.branchOf.charAt(0).toUpperCase() + a.branchOf.slice(1) + ' branch' : '';
 
   const $ = id => document.getElementById(id);
   const el = {
@@ -70,7 +78,7 @@
   // Keep these in step with the score_ms formula in supabase/leaderboard.sql
   const MISTAKE_PENALTY_MS = 10000;
   const HINT_PENALTY_MS = 20000;
-  const MIN_TIME_MS = 20000; // the database rejects anything faster
+  const MIN_TIME_MS = 30000; // the database rejects anything faster
   const scoreOf = (timeMs, mistakes, hints) => timeMs + mistakes * MISTAKE_PENALTY_MS + hints * HINT_PENALTY_MS;
   const cleanNick = v => String(v || '').replace(/[\u0000-\u001f\u007f]/g, '').replace(/\s+/g, ' ').trim().slice(0, 24);
   const nickKey = v => cleanNick(v).toLowerCase();
@@ -107,14 +115,14 @@
       } finally { clearTimeout(timer); }
     },
     submit(run) {
-      return this.req('irrigation_scores', { method: 'POST', headers: { 'Content-Type': 'application/json', Prefer: 'return=minimal' }, body: JSON.stringify(run) });
+      return this.req('irrigation_v2_scores', { method: 'POST', headers: { 'Content-Type': 'application/json', Prefer: 'return=minimal' }, body: JSON.stringify(run) });
     },
     board(mode) {
-      return this.req(`irrigation_leaderboard?select=nickname,nickname_key,score_ms,time_ms,mistakes,hints,runs,created_at&mode=eq.${mode}&order=score_ms.asc,created_at.asc&limit=500`);
+      return this.req(`irrigation_v2_leaderboard?select=nickname,nickname_key,score_ms,time_ms,mistakes,hints,runs,created_at&mode=eq.${mode}&order=score_ms.asc,created_at.asc&limit=500`);
     },
     runs(key) {
       const quoted = '"' + key.replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
-      return this.req(`irrigation_scores?select=nickname,mode,score_ms,time_ms,mistakes,hints,created_at&nickname_key=eq.${encodeURIComponent(quoted)}&order=created_at.desc&limit=200`);
+      return this.req(`irrigation_v2_scores?select=nickname,mode,score_ms,time_ms,mistakes,hints,created_at&nickname_key=eq.${encodeURIComponent(quoted)}&order=created_at.desc&limit=200`);
     }
   };
   // The table doesn't exist yet: supabase/leaderboard.sql hasn't been run in the project
@@ -123,13 +131,13 @@
   const retryable = e => !e.status || e.status >= 500 || e.code === '42501' || notSetUp(e);
 
   function queueRun(run) {
-    const list = store.get('pending', []);
+    const list = store.get('v2.pending', []);
     list.push(run);
-    store.set('pending', list.slice(-50));
+    store.set('v2.pending', list.slice(-50));
   }
   async function flushPending() {
     if (!lb.on) return;
-    const list = store.get('pending', []);
+    const list = store.get('v2.pending', []);
     if (!list.length) return;
     const keep = [], seen = new Set();
     for (const run of list) {
@@ -138,7 +146,7 @@
       seen.add(k);
       try { await lb.submit(run); } catch (e) { if (retryable(e)) keep.push(run); }
     }
-    store.set('pending', keep);
+    store.set('v2.pending', keep);
   }
 
   // ------------------------------------------------------------------
@@ -374,15 +382,24 @@
       const pick = document.createElement('button');
       pick.type = 'button';
       pick.className = 'artery-pick';
+      const title = document.createElement('span');
+      title.className = 'artery-title';
+      if (a.branchOf) {
+        const of = document.createElement('span');
+        of.className = 'artery-of';
+        of.textContent = branchLabel(a);
+        title.appendChild(of);
+      }
       const name = document.createElement('span');
       name.className = 'artery-name';
       name.textContent = a.name;
+      title.appendChild(name);
       const count = document.createElement('span');
       count.className = 'artery-count';
       count.innerHTML = CHECK_SVG;
       const countText = document.createElement('span');
       count.appendChild(countText);
-      pick.append(name, count);
+      pick.append(title, count);
 
       const vessel = document.createElement('div');
       vessel.className = 'vessel';
@@ -488,6 +505,12 @@
             td.className = 'art';
             td.rowSpan = a.n;
             td.textContent = a.name;
+            if (a.branchOf) {
+              const of = document.createElement('span');
+              of.className = 'art-of';
+              of.textContent = branchLabel(a);
+              td.appendChild(of);
+            }
           }
           tr.insertCell().textContent = r.label;
         });
@@ -586,7 +609,7 @@
       a.slotEls.forEach((s, i) => {
         const it = items[i];
         const chip = it && it.chip;
-        const label = chip ? chip.label : (it && it.rev) || ' ';
+        const label = chip ? (chip.locked ? labelIn(a, chip.key, chip.label) : chip.label) : (it && it.rev) || ' ';
         if (s.labelEl.textContent !== label) s.labelEl.textContent = label;
         const empty = !it;
         const movable = !!chip && !chip.locked && S.running;
@@ -602,7 +625,7 @@
         s.tabIndex = movable ? 0 : -1;
         if (chip) { s.dataset.chip = chip.id; slotOfChip.set(chip.id, s); } else delete s.dataset.chip;
         let aria;
-        if (chip && chip.locked) aria = `${chip.label}, correct.`;
+        if (chip && chip.locked) aria = `${label}, correct.`;
         else if (chip && chip.wrong) aria = `${chip.label}, wrong artery. Press to send it back.`;
         else if (chip) aria = `${chip.label}, placed. Press to send it back.`;
         else if (it && it.rev) aria = `${it.rev}, answer shown.`;
@@ -839,7 +862,7 @@
         flash(chipEls.get(chipId), 'shake');
         toast(a.keys.includes(chip.key)
           ? `The ${a.name} already has “${chip.label}”. This one belongs to another artery.`
-          : `${chip.label} isn’t irrigated by the ${a.name}.`, 2800);
+          : `In this table, “${chip.label}” doesn’t go with the ${a.name}.`, 2800);
         S.selChip = null;
         render();
         return 'wrong';
@@ -1108,12 +1131,12 @@
 
     // Every finished run is kept on this device too (and powers the offline leaderboard)
     const key = nickKey(S.nick);
-    const local = store.get('runs', []);
+    const local = store.get('v2.runs', []);
     const prevBest = local
       .filter(r => nickKey(r.nickname) === key && r.mode === run.mode)
       .reduce((m, r) => Math.min(m, r.score_ms), Infinity);
     local.push(Object.assign({}, run, { score_ms: score, at: new Date().toISOString() }));
-    store.set('runs', local.slice(-300));
+    store.set('v2.runs', local.slice(-300));
 
     const extras = [];
     if (S.mistakes) extras.push(`${S.mistakes * MISTAKE_PENALTY_MS / 1000} seconds for ${plural(S.mistakes, 'mistake')}`);
@@ -1322,7 +1345,7 @@
 
   function localBoard(mode) {
     const best = new Map();
-    store.get('runs', []).filter(r => r.mode === mode).forEach(r => {
+    store.get('v2.runs', []).filter(r => r.mode === mode).forEach(r => {
       const k = nickKey(r.nickname);
       const cur = best.get(k);
       if (!cur) best.set(k, Object.assign({}, r, { nickname_key: k, runs: 1, created_at: r.at }));
@@ -1423,7 +1446,7 @@
     let runs;
     try {
       runs = global ? (await lb.runs(r.nickname_key) || [])
-        : store.get('runs', []).filter(x => nickKey(x.nickname) === r.nickname_key).map(x => Object.assign({}, x, { created_at: x.at })).reverse();
+        : store.get('v2.runs', []).filter(x => nickKey(x.nickname) === r.nickname_key).map(x => Object.assign({}, x, { created_at: x.at })).reverse();
     } catch (e) {
       td.textContent = 'Couldn’t load this player’s runs. Try again in a moment.';
       return;

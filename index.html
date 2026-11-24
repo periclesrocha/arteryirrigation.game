@@ -7,7 +7,7 @@
 <meta name="description" content="A matching game for the head and neck: pick an artery, then find every region it irrigates.">
 <meta name="theme-color" content="#A8132C">
 <meta property="og:title" content="Artery Irrigation Regions">
-<meta property="og:description" content="Pick an artery, then find every region it irrigates. 17 arteries, 43 regions.">
+<meta property="og:description" content="Pick an artery, then find every region it irrigates. 29 arteries and branches, 58 regions.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23F1F3F6'/%3E%3Cpath d='M8 32 H24 C32 32 32 15 42 15 M24 32 H42 M24 32 C32 32 32 49 42 49' fill='none' stroke='%23A8132C' stroke-width='6' stroke-linecap='round'/%3E%3Ccircle cx='50' cy='15' r='6' fill='%23A8132C'/%3E%3Ccircle cx='50' cy='32' r='6' fill='%23A8132C'/%3E%3Ccircle cx='50' cy='49' r='6' fill='%23A8132C'/%3E%3C/svg%3E">
 <link rel="preload" href="fonts/atkinson-hyperlegible-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/crimson-pro-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin>
@@ -54,7 +54,7 @@
     <div class="panel-head">
       <div class="panel-title">
         <h2>Arteries</h2>
-        <span id="matchCount">0 of 43 matched</span>
+        <span id="matchCount">0 of 58 matched</span>
       </div>
       <div class="head-right">
         <div class="pill" id="chipPill" hidden>
@@ -75,7 +75,7 @@
     <div class="bank-head">
       <div class="bank-title">
         <h2>Regions irrigated</h2>
-        <span id="bankCount">43 left</span>
+        <span id="bankCount">58 left</span>
       </div>
       <div class="target" id="target" hidden>
         <span id="targetText"></span>
@@ -103,7 +103,7 @@
 <dialog class="sheet" id="introDialog" aria-labelledby="introTitle">
   <form method="dialog" id="introForm">
     <h2 id="introTitle">Match each region to its artery</h2>
-    <p class="lede">Pick an artery on the left, then pick every region it irrigates from the list on the right. You can also pick a region first and then its artery. A few regions get blood from two arteries, so their names show up twice.</p>
+    <p class="lede">Pick an artery on the left, then pick every region it irrigates from the list on the right. You can also pick a region first and then its artery. Some regions are irrigated by more than one artery, so their names show up more than once.</p>
 
     <label class="field" for="nickInput">
       <span class="field-label">Your nickname</span>
@@ -206,7 +206,7 @@
     <button class="dialog-close" type="button" id="aboutClose" aria-label="Close">&times;</button>
   </div>
   <p class="about-game">Artery Irrigation Regions</p>
-  <p class="lede">A study game for the arteries of the head and neck: match each of the 43 regions to the artery that irrigates it.</p>
+  <p class="lede">A study game for the arteries of the head and neck: match each of the 58 regions to the artery or branch that irrigates it.</p>
   <p class="about-love">Built with love for Ceci <span class="beating">❤️</span></p>
   <p class="about-rights">&copy; 2026 Peri Rocha &amp; Cecilia Stelzer. All rights reserved.</p>
   <dl class="about-credits">

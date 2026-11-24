@@ -2,8 +2,8 @@
  * Global leaderboard settings (Supabase).
  *
  * This is the same Supabase project as the Arterial Blood Supply game. This game keeps
- * its scores in its own table (irrigation_scores), so run supabase/leaderboard.sql once
- * in that project to turn its leaderboard on. Until then, scores stay on each device and
+ * its scores in its own table (irrigation_v2_scores, for the 58-region table), so run
+ * supabase/leaderboard.sql once in that project to turn its leaderboard on. Until then, scores stay on each device and
  * are sent automatically once the table exists. See README.md.
  *
  * The publishable key is meant to be public: the database rules in
